@@ -16,6 +16,8 @@ const HANDLED_COMMANDS = require('./Commands.js')
 class JarvisBot {
     constructor(prefix) {
         this.prefix = prefix;
+        this.dispatcher;
+        this.connection;
         this.queue = [];
     }
 
@@ -23,13 +25,19 @@ class JarvisBot {
     commandHandler(message) {
         if (message.author.bot) return;
         if (!message.content.startsWith(this.prefix)) return;
+
         let args = message.content.substring(this.prefix.length).split(" ");
         let command = args[0];
 
         if (Object.values(HANDLED_COMMANDS.MUSIC_COMMANDS).includes(command)) {
             switch (command) {
                 case HANDLED_COMMANDS.MUSIC_COMMANDS.PLAY:
-                    if (!args[1]) {
+                    if(!args[1]) {
+                        if(this.dispatcher.paused) {
+                            this.dispatcher.resume();
+                            return;
+                        }
+                      
                         message.channel.send("Je ne peut rien faire sans lien, monsieur");
                         return;
                     }
@@ -38,26 +46,39 @@ class JarvisBot {
                         message.channel.send("Pourriez-vous rejoindre un channel vocal avant, monsieur ?");
                         return;
                     }
+                    
+                    if(!message.guild.voiceConnection) {
+                        this.connection = await message.member.voice.channel.join()
+                    }
 
-                    if (!message.guild.voiceConnection) {
-                        message.member.voice.channel.join()
-                            .then(connection => {
-                                if (this.queue.length === 0) {
-                                    this.addSongToQueue(args[1], message).then(() => {
-                                        this.play(connection, this.queue[0].url)
-                                    })
-                                } else {
-                                    this.addSongToQueue(args[1], message);
-                                }
-                            })
+                    if (this.queue.length === 0) {
+                        this.addSongToQueue(args[1], message).then(() => {
+                            this.play(this.queue[0].url)
+                        })
                     } else {
-                        this.play(message.guild.voiceConnection, args[1])
+                        this.addSongToQueue(args[1], message);
                     }
 
                     break;
                 case HANDLED_COMMANDS.MUSIC_COMMANDS.PAUSE:
+                    if(!message.member.voice.channel) {
+                        message.channel.send("Ceci ne vous regarde pas, monsieur")
+                        return;
+                    }
+
+                    if(this.dispatcher) {
+                        this.dispatcher.pause()
+                        message.channel.send("Musique en Pause")
+                    }
+
                     break;
                 case HANDLED_COMMANDS.MUSIC_COMMANDS.STOP:
+                    if(!message.member.voice.channel) {
+                        message.channel.send("Ceci ne vous regarde pas, monsieur")
+                        return;
+                    }
+                    //TODO : Vider la queue
+                    this.dispatcher.end()
                     break;
                 case HANDLED_COMMANDS.MUSIC_COMMANDS.QUEUE:
                     this.listQueue(message);
@@ -66,20 +87,23 @@ class JarvisBot {
         } else {
             message.channel.send("Désolé monsieur, cela ne fait pas parti de mes fonctionnalités. Entrez !help pour plus d'informations.");
         }
+
+        message.delete()
     }
 
     //Start streaming a youtube url link
-    play(connection, url) {
-        let dispatcher = connection.play(ytdl(url, {
-            filter: "audioonly"
-        }))
+    play(url) {        
+        this.dispatcher = this.connection.play(ytdl(url, {
+            filter: "audioonly",
+        })
+        )
 
-        dispatcher.on("finish", () => {
+        this.dispatcher.on("finish", () => {
             this.queue.shift();
             if (this.queue.length === 0) {
-                connection.disconnect()
+                this.connection.disconnect()
             } else {
-                this.play(connection, this.queue[0].url);  
+                this.play(this.connection, this.queue[0].url);  
             }
         })
     }
