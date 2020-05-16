@@ -2,7 +2,7 @@
   "name": "discord-music-bot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/SaturdayCodeFever/discord-music-bot/issues"
   },
-  "homepage": "https://github.com/SaturdayCodeFever/discord-music-bot#readme"
+  "homepage": "https://github.com/SaturdayCodeFever/discord-music-bot#readme",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "opusscript": "0.0.7",
+    "ytdl-core": "^2.1.2"
+  }
 }
