@@ -38,11 +38,19 @@ bot.on('message', message => {
             if(!message.guild.voiceConnection) {
                 message.member.voice.channel.join()
                 .then(connection => {
-                    play(connection, args[1]);
+                    message.channel.send(`Vous venez d'ajouter ${args[1]} à la liste d'attente, monsieur`);
+                    queue.push(args[1])
+                    play(connection, queue[0]);
                 })
             }  
             
            break;
+        case 'queue':
+            message.channel.send(`La liste d'attente actuelle est composée des morceaux suivants: `);
+            queue.forEach(song => {
+                message.channel.send(`${song} - \n `);
+            })
+            break;
         default :
             break; 
     }
