@@ -55,7 +55,7 @@ class JarvisBot {
                 }
             }
         } else {
-            message.channel.send("Desole monsieur, cela ne fait pas parti de mes fonctionnalitees. Entrez !help pour plus d'informations.");
+            message.channel.send("Désolé monsieur, cela ne fait pas parti de mes fonctionnalités. Entrez !help pour plus d'informations.");
         }
     }
 
