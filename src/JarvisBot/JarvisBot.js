@@ -16,12 +16,15 @@ const HANDLED_COMMANDS = require('./Commands.js')
 class JarvisBot {
     constructor(prefix) {
         this.prefix = prefix;
+        this.dispatcher;
+        this.stream;
     } 
 
     //applies the correct logic to the command, based on HANDLED_COMMANDS
     commandHandler(message) {
         if(message.author.bot) return;
         if(!message.content.startsWith(this.prefix))
+
         let args = message.content.substring(this.prefix.length).split(" ");
         let command = args[0]
 
@@ -51,6 +54,11 @@ class JarvisBot {
                 case HANDLED_COMMANDS.MUSIC_COMMANDS.PAUSE:
                     break;
                 case HANDLED_COMMANDS.MUSIC_COMMANDS.STOP:
+                    if(!message.member.voice.channel) {
+                        message.channel.send("Ceci ne vous regarde pas, monsieur")
+                    }
+                    //TODO : Vider la queue
+                    this.dispatcher.end()
                     break;
             }
         } else {
@@ -60,11 +68,13 @@ class JarvisBot {
 
     //Start streaming a youtube url link
     play(connection, url) {
-        let dispatcher = connection.play(ytdl(url, {
-            filter: "audioonly"
-        }))
+        this.stream = ytdl(url, {
+            filter: "audioonly",
+        })
+
+        connection
         
-        dispatcher.on("end", () => {
+        this.dispatcher.on("finish", () => {
            connection.disconnect()
         })
     }
