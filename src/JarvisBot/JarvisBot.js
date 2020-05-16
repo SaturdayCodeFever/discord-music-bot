@@ -7,7 +7,7 @@ const ytdl = require('ytdl-core')
   * INSTANCES :
   *     HANDLED_COMMANDS - Data object containing all the handled commands
   */
-const HANDLED_COMMANDS = require('Commands.js')
+const HANDLED_COMMANDS = require('./Commands.js')
 
 
 /**

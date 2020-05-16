@@ -18,6 +18,7 @@
   "homepage": "https://github.com/SaturdayCodeFever/discord-music-bot#readme",
   "dependencies": {
     "discord.js": "^12.2.0",
+    "nodemon": "^2.0.4",
     "opusscript": "0.0.7",
     "ytdl-core": "^2.1.2"
   }
