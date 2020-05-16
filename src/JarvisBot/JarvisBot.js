@@ -22,7 +22,7 @@ class JarvisBot {
     }
 
     //applies the correct logic to the command, based on HANDLED_COMMANDS
-    commandHandler(message) {
+    async commandHandler(message) {
         if (message.author.bot) return;
         if (!message.content.startsWith(this.prefix)) return;
 
@@ -77,11 +77,20 @@ class JarvisBot {
                         message.channel.send("Ceci ne vous regarde pas, monsieur")
                         return;
                     }
-                    //TODO : Vider la queue
+                    this.queue = []
                     this.dispatcher.end()
+                    this.connection.disconnect()
                     break;
                 case HANDLED_COMMANDS.MUSIC_COMMANDS.QUEUE:
                     this.listQueue(message);
+                    break;
+                case HANDLED_COMMANDS.MUSIC_COMMANDS.NEXT:
+                    if(!message.member.voice.channel) {
+                        message.channel.send("Ceci ne vous regarde pas, monsieur")
+                        return;
+                    }
+
+                    this.dispatcher.end()
                     break;
             }
         } else {
@@ -103,7 +112,7 @@ class JarvisBot {
             if (this.queue.length === 0) {
                 this.connection.disconnect()
             } else {
-                this.play(this.connection, this.queue[0].url);  
+                this.play(this.queue[0].url);  
             }
         })
     }
