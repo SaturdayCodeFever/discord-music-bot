@@ -10,12 +10,14 @@ const fs = require('fs');
 /**
  *  INSTANCES :
  */
-const config = JSON.parse(fs.readFileSync("./static/config.json"));
+const config = JSON.parse(fs.readFileSync("../static/config.json"));
 const client = new Discord.Client();
 const jarvis = new JarvisBot(config.prefix);
 
-client.on('ready', () => {});
+client.on('ready', () => {
+    console.log('JARVIS ONLINE')
+});
 
-client.on('message', jarvis.commandHandler);
+client.on('message', (message) => jarvis.commandHandler(message));
 
 client.login(config.bot_token);

@@ -20,39 +20,37 @@ class JarvisBot {
 
     //applies the correct logic to the command, based on HANDLED_COMMANDS
     commandHandler(message) {
+        if(message.author.bot) return;
         let args = message.content.substring(this.prefix.length).split(" ");
         let command = args[0]
 
+        if(Object.values(HANDLED_COMMANDS.MUSIC_COMMANDS).includes(command)) {
+            switch (command) {
+                case HANDLED_COMMANDS.MUSIC_COMMANDS.PLAY:
+                    if(!args[1]) {
+                        message.channel.send("Je ne peut rien faire sans lien, monsieur");
+                        return;
+                    }
 
-        if(Object.values(HANDLED_COMMANDS).includes(command)) {
-            if(Object.values(HANDLED_COMMANDS.MUSIC_COMMANDS).includes(command)) {
-                switch (command) {
-                    case HANDLED_COMMANDS.MUSIC_COMMANDS.PLAY:
-                        if(!args[1]) {
-                            message.channel.send("Je ne peut rien faire sans lien, monsieur");
-                            return;
-                        }
+                    if(!message.member.voice.channel) {
+                        message.channel.send("Pourriez-vous rejoindre un channel vocal avant, monsieur ?");
+                        return;
+                    }
+                    
+                    if(!message.guild.voiceConnection) {
+                        message.member.voice.channel.join()
+                        .then(connection => {
+                            this.play(connection, args[1])
+                        })
+                    } else {
+                        this.play(message.guild.voiceConnection, args[1])
+                    }
 
-                        if(!message.member.voice.channel) {
-                            message.channel.send("Pourriez-vous rejoindre un channel vocal avant, monsieur ?");
-                            return;
-                        }
-                        
-                        if(!message.guild.voiceConnection) {
-                            message.member.voice.channel.join()
-                            .then(connection => {
-                                this.play(connection, args[1])
-                            })
-                        } else {
-                            this.play(message.guild.voiceConnection, args[1])
-                        }
-
-                        break;
-                    case HANDLED_COMMANDS.MUSIC_COMMANDS.PAUSE:
-                        break;
-                    case HANDLED_COMMANDS.MUSIC_COMMANDS.STOP:
-                        break;
-                }
+                    break;
+                case HANDLED_COMMANDS.MUSIC_COMMANDS.PAUSE:
+                    break;
+                case HANDLED_COMMANDS.MUSIC_COMMANDS.STOP:
+                    break;
             }
         } else {
             message.channel.send("Désolé monsieur, cela ne fait pas parti de mes fonctionnalités. Entrez !help pour plus d'informations.");
