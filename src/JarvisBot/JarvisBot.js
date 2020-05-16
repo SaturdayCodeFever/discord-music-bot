@@ -17,13 +17,13 @@ class JarvisBot {
     constructor(prefix) {
         this.prefix = prefix;
         this.dispatcher;
-        this.stream;
+        this.connection;
     } 
 
     //applies the correct logic to the command, based on HANDLED_COMMANDS
-    commandHandler(message) {
+    async commandHandler(message) {
         if(message.author.bot) return;
-        if(!message.content.startsWith(this.prefix))
+        if(!message.content.startsWith(this.prefix)) return;
 
         let args = message.content.substring(this.prefix.length).split(" ");
         let command = args[0]
@@ -32,6 +32,11 @@ class JarvisBot {
             switch (command) {
                 case HANDLED_COMMANDS.MUSIC_COMMANDS.PLAY:
                     if(!args[1]) {
+                        if(this.dispatcher.paused) {
+                            this.dispatcher.resume();
+                            return;
+                        }
+
                         message.channel.send("Je ne peut rien faire sans lien, monsieur");
                         return;
                     }
@@ -42,20 +47,29 @@ class JarvisBot {
                     }
                     
                     if(!message.guild.voiceConnection) {
-                        message.member.voice.channel.join()
-                        .then(connection => {
-                            this.play(connection, args[1])
-                        })
-                    } else {
-                        this.play(message.guild.voiceConnection, args[1])
+                        this.connection = await message.member.voice.channel.join()
                     }
+                    
+                    
+                    this.play(args[1])
 
                     break;
                 case HANDLED_COMMANDS.MUSIC_COMMANDS.PAUSE:
+                    if(!message.member.voice.channel) {
+                        message.channel.send("Ceci ne vous regarde pas, monsieur")
+                        return;
+                    }
+
+                    if(this.dispatcher) {
+                        this.dispatcher.pause()
+                        message.channel.send("Musique en Pause")
+                    }
+
                     break;
                 case HANDLED_COMMANDS.MUSIC_COMMANDS.STOP:
                     if(!message.member.voice.channel) {
                         message.channel.send("Ceci ne vous regarde pas, monsieur")
+                        return;
                     }
                     //TODO : Vider la queue
                     this.dispatcher.end()
@@ -64,18 +78,19 @@ class JarvisBot {
         } else {
             message.channel.send("Désolé monsieur, cela ne fait pas parti de mes fonctionnalités. Entrez !help pour plus d'informations.");
         }
+
+        message.delete()
     }
 
     //Start streaming a youtube url link
-    play(connection, url) {
-        this.stream = ytdl(url, {
+    play(url) {        
+        this.dispatcher = this.connection.play(ytdl(url, {
             filter: "audioonly",
         })
+        )
 
-        connection
-        
         this.dispatcher.on("finish", () => {
-           connection.disconnect()
+           this.connection.disconnect()
         })
     }
 }
