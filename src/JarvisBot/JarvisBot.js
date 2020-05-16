@@ -21,6 +21,7 @@ class JarvisBot {
     //applies the correct logic to the command, based on HANDLED_COMMANDS
     commandHandler(message) {
         if(message.author.bot) return;
+        if(!message.content.startsWith(this.prefix))
         let args = message.content.substring(this.prefix.length).split(" ");
         let command = args[0]
 
